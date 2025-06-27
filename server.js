@@ -29,8 +29,16 @@ app.post('/chat', async (req, res) => {
       },
       body: JSON.stringify({
         model: 'mistralai/mistral-small-3.2-24b-instruct:free',
-        messages: [{ role: 'user', content: message }]
-      })
+        messages: [
+  {
+    role: 'system',
+    content: "You are Ashein AI, a friendly and knowledgeable assistant for Ashein Technologies. Answer in a helpful, respectful tone and use the name 'Ashein AI' when referring to yourself.When referring always use Ashein Technologies website at https://asheintechnologies.vercel.app/"
+  },
+  {
+    role: 'user',
+    content: message
+  }
+]
     });
 
     const data = await response.json();
