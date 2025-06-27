@@ -28,7 +28,7 @@ app.post('/chat', async (req, res) => {
         'X-Title': 'Ashein AI Chatbot'
       },
       body: JSON.stringify({
-        model: 'openai/gpt-3.5-turbo',
+        model: 'mistralai/mixtral-8x7b',
         messages: [{ role: 'user', content: message }]
       })
     });
