@@ -1,61 +1,55 @@
 const express = require('express');
 const cors = require('cors');
 const bodyParser = require('body-parser');
-const fetch = require('node-fetch'); // Make sure this is installed
+const OpenAI = require('openai');
 
 const app = express();
 const port = process.env.PORT || 5000;
 
-// Enable CORS for your frontend
-app.use(cors({
-  origin: 'https://asheintechnologies.vercel.app'
-}));
-
+app.use(cors());
 app.use(bodyParser.json());
 
-const OPENROUTER_API_KEY = process.env.OPENROUTER_API_KEY;
+const openai = new OpenAI({
+  apiKey: process.env.OPENAI_API_KEY
+});
 
 app.post('/chat', async (req, res) => {
   try {
     const { message } = req.body;
 
-    const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${OPENROUTER_API_KEY}`,
-        'Content-Type': 'application/json',
-        'HTTP-Referer': 'https://asheintechnologies.vercel.app',
-        'X-Title': 'Ashein AI Chatbot'
-      },
-      body: JSON.stringify({
-        model: 'mistralai/mistral-small-3.2-24b-instruct:free',
-        messages: [
-  {
-    role: 'system',
-    content: "You are Ashein AI, a friendly and knowledgeable assistant for Ashein Technologies. Answer in a helpful, respectful tone and use the name 'Ashein AI' when referring to yourself.When referring always use Ashein Technologies website at https://asheintechnologies.vercel.app/"
-  },
-  {
-    role: 'user',
-    content: message
-  }
-]
+    const response = await openai.chat.completions.create({
+      model: 'mistralai/mistral-small-3.2-24b-instruct:free',
+      messages: [
+        {
+          role: 'system',
+          content: "You are Ashein AI, a friendly and knowledgeable assistant for Ashein Technologies. Answer questions clearly and refer to yourself as 'Ashein AI'. Aways refer to https://asheintechnologies.vercel.app/"
+        },
+        {
+          role: 'user',
+          content: message
+        }
+      ]
     });
 
-    const data = await response.json();
-    console.log('🧠 OpenRouter AI response:', data);
+    const reply = response.choices[0]?.message?.content;
 
-    if (data.choices && data.choices.length > 0) {
-      res.json({ reply: data.choices[0].message.content });
-    } else {
-      console.error('❌ Invalid OpenRouter response:', data);
-      res.status(500).json({ reply: 'Sorry, I couldn’t get a response from the AI.' });
+    if (!reply) {
+      throw new Error('No valid response from AI.');
     }
+
+    console.log('🧠 Ashein AI says:', reply);
+    res.json({ reply });
+
   } catch (err) {
-    console.error('❌ Chat error:', err);
-    res.status(500).json({ error: 'Something went wrong.' });
+    console.error('❌ Chat error:', err.message);
+    res.status(500).json({ error: 'Ashein AI failed to respond.' });
   }
 });
 
+app.get('/', (req, res) => {
+  res.send('Ashein ChatGPT backend is running 🚀');
+});
+
 app.listen(port, () => {
-  console.log(`🚀 Ashein AI Chatbot running on port ${port}`);
-})
+  console.log(`🚀 Server running on port ${port}`);
+});
