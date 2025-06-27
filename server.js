@@ -24,25 +24,28 @@ app.post('/chat', async (req, res) => {
       headers: {
         'Authorization': `Bearer ${OPENROUTER_API_KEY}`,
         'Content-Type': 'application/json',
-        'HTTP-Referer': 'https://asheintechnologies.vercel.app', // Optional but recommended
-        'X-Title': 'Ashein AI Chatbot' // Optional: for tracking usage in your OpenRouter dashboard
+        'HTTP-Referer': 'https://asheintechnologies.vercel.app',
+        'X-Title': 'Ashein AI Chatbot'
       },
       body: JSON.stringify({
-        model: 'openai/gpt-3.5-turbo', // You can also try other models like anthropic/claude-3-haiku
+        model: 'openai/gpt-3.5-turbo',
         messages: [{ role: 'user', content: message }]
       })
     });
 
     const data = await response.json();
-
     console.log('🧠 OpenRouter AI response:', data);
-    
+
     if (data.choices && data.choices.length > 0) {
-  res.json({ reply: data.choices[0].message.content });
-} else {
-  console.error('Invalid OpenRouter response:', data);
-  res.status(500).json({ reply: 'Sorry, I couldn’t get a response from the AI.' });
+      res.json({ reply: data.choices[0].message.content });
+    } else {
+      console.error('❌ Invalid OpenRouter response:', data);
+      res.status(500).json({ reply: 'Sorry, I couldn’t get a response from the AI.' });
     }
+  } catch (err) {
+    console.error('❌ Chat error:', err);
+    res.status(500).json({ error: 'Something went wrong.' });
+  }
 });
 
 app.listen(port, () => {
